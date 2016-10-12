@@ -43,6 +43,7 @@
                 <th>Status</th>
                 <th>Branch</th>
                 <th>Logs</th>
+                <th>Runtime</th>
               </tr>
             </thead>
             <tbody>
@@ -60,6 +61,7 @@
                 {% endif %}
                 <td>{{ change["branch"]}}</td>
                 <td><a href="{{ change["run"].logs }}">logs</a></td>
+                <td>{{ change["run"].runtime }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -79,6 +81,7 @@
                 <th>Status</th>
                 <th>Branch</th>
                 <th>Logs</th>
+                <th>Runtime</th>
               </tr>
             </thead>
             <tbody>
@@ -96,6 +99,7 @@
                 {% endif %}
                 <td>{{ change["branch"] }}</td>
                 <td><a href="{{ change["run"].logs }}">logs</a></td>
+                <td>{{ change["run"].runtime }}</td>
               </tr>
               {% endfor %}
             </tbody>

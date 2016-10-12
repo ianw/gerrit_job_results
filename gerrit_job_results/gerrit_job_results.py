@@ -81,9 +81,12 @@ def main():
         results = latest['message'].split('\n')
         for result in results:
             if result.startswith("-"):
+                # strip the non-voting so everything else is the the
+                # time
+                result = result.replace('(non-voting)', '')
                 jobs = result[2:].split(' ')
                 # figure out runtime
-                j = TestRun(jobs[0], jobs[1], jobs[3], "XXX")
+                j = TestRun(jobs[0], jobs[1], jobs[3], " ".join(jobs[5:]))
                 change.tests.append(j)
 
         all_changes.append(change)

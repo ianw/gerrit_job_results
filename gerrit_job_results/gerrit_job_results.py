@@ -91,21 +91,21 @@ def main():
 
         all_changes.append(change)
 
-        fedora_24_changes = []
+        fedora_25_changes = []
         for change in all_changes:
             for run in change.tests:
-                if run.name == "gate-tempest-dsvm-platform-fedora24-nv":
-                    fedora_24_changes.append(dict(timestamp=change.timestamp,
+                if run.name == "gate-tempest-dsvm-neturon-full-fedora-25-nv":
+                    fedora_25_changes.append(dict(timestamp=change.timestamp,
                                                   number=change.number,
                                                   subject=change.subject,
                                                   branch=change.branch,
                                                   run=run))
-        fedora_24_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+        fedora_25_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
         centos_changes = []
         for change in all_changes:
             for run in change.tests:
-                if run.name == "gate-tempest-dsvm-platform-centos7-nv":
+                if run.name == "gate-tempest-dsvm-neutron-full-centos-7-nv":
                     centos_changes.append(dict(timestamp=change.timestamp,
                                                number=change.number,
                                                subject=change.subject,
@@ -118,7 +118,7 @@ def main():
         template = env.get_template('page.html')
 
         output = template.render(all_changes=all_changes,
-                                 fedora_24_changes=fedora_24_changes,
+                                 fedora_25_changes=fedora_25_changes,
                                  centos_changes=centos_changes)
 
         with codecs.open('output.html', 'w', 'utf-8') as f:

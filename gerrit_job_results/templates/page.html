@@ -23,55 +23,17 @@
   <body>
     <div class="container">
       <h1>ianw run debugging page</h1>
-
+      <p><i>Last update: {{ updated }}</i></p>
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#f25_devstack" aria-controls="home" role="tab" data-toggle="tab">F25 devstack</a></li>
-        <li role="presentation"><a href="#centos_devstack" aria-controls="profile" role="tab" data-toggle="tab">Centos Devstack</a></li>
+        <li role="presentation" class="active"><a href="#centos_devstack" aria-controls="profile" role="tab" data-toggle="tab">Centos Devstack</a></li>
+        <li role="presentation"><a href="#f25_devstack" aria-controls="home" role="tab" data-toggle="tab">F25 devstack</a></li>
       </ul>
 
       <!-- Tab panes -->
       <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="f25_devstack">
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Change</th>
-                <th>Subject</th>
-                <th>Status</th>
-                <th>Branch</th>
-                <th>Logs</th>
-                <th>Runtime</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for change in fedora_25_changes %}
-              <tr>
-                <td>{{ change["timestamp"] }}</td>
-                <td><a href="http://review.openstack.org/{{ change["number"] }}">{{ change["number"] }}</a></td>
-                <td>{{ change["subject"] }}</td>
-                {% if change["run"].status == "FAILURE" %}
-                <td><span class="label label-danger">FAILURE</span></td>
-                {% elif change["run"].status == "SUCCESS" %}
-                <td><span class="label label-success">SUCCESS</span></td>
-                {% else %}
-                <td>{{ change["run"].status }}</td>
-                {% endif %}
-                <td>{{ change["branch"]}}</td>
-                <td><a href="{{ change["run"].logs }}">logs</a></td>
-                <td>{{ change["run"].runtime }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-
-        </div><!--f25-devstack-tab-->
-
-        <div role="tabpanel" class="tab-pane" id="centos_devstack">
-
+        <div role="tabpanel" class="tab-pane active" id="centos_devstack">
           <table class="table">
             <thead>
               <tr>
@@ -104,10 +66,43 @@
               {% endfor %}
             </tbody>
           </table>
-
-
-
         </div><!--centos-tab-->
+
+        <div role="tabpanel" class="tab-pane" id="f25_devstack">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Change</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Branch</th>
+                <th>Logs</th>
+                <th>Runtime</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for change in fedora_25_changes %}
+              <tr>
+                <td>{{ change["timestamp"] }}</td>
+                <td><a href="http://review.openstack.org/{{ change["number"] }}">{{ change["number"] }}</a></td>
+                <td>{{ change["subject"] }}</td>
+                {% if change["run"].status == "FAILURE" %}
+                <td><span class="label label-danger">FAILURE</span></td>
+                {% elif change["run"].status == "SUCCESS" %}
+                <td><span class="label label-success">SUCCESS</span></td>
+                {% else %}
+                <td>{{ change["run"].status }}</td>
+                {% endif %}
+                <td>{{ change["branch"]}}</td>
+                <td><a href="{{ change["run"].logs }}">logs</a></td>
+                <td>{{ change["run"].runtime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div><!--f25-devstack-tab-->
+
       </div>
 
     </div>
@@ -118,7 +113,6 @@
 
 <div>
 
-  
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->

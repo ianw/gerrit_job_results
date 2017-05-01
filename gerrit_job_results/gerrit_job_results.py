@@ -1,9 +1,10 @@
 import codecs
-import datetime
 import logging
 import os.path
 
 import gerritlib.gerrit
+
+from datetime import datetime
 
 from jinja2 import Environment
 from jinja2 import PackageLoader
@@ -73,7 +74,7 @@ def main():
             logging.info("No jenkins comments, skipping")
             continue
 
-        timestamp = datetime.datetime.fromtimestamp(latest['timestamp'])
+        timestamp = datetime.fromtimestamp(latest['timestamp'])
 
         change = Change('devstack', change['branch'],
                         change['number'], timestamp, change['subject'])
@@ -119,7 +120,8 @@ def main():
 
         output = template.render(all_changes=all_changes,
                                  fedora_25_changes=fedora_25_changes,
-                                 centos_changes=centos_changes)
+                                 centos_changes=centos_changes,
+                                 updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
 
         with codecs.open('output.html', 'w', 'utf-8') as f:
             f.write(output)

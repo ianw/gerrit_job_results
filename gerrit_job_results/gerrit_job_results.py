@@ -1,6 +1,7 @@
 import codecs
 import logging
 import os.path
+import re
 
 import gerritlib.gerrit
 
@@ -19,11 +20,10 @@ KEY = os.path.expanduser('~/.ssh/id_rsa')
 class Change(object):
 
     def __init__(self,
-                 project, branch, number, timestamp, subject):
+                 project, branch, number, subject):
         self.project = project
         self.branch = branch
         self.number = number
-        self.timestamp = timestamp
         self.subject = subject
         self.tests = []
 
@@ -38,8 +38,11 @@ class Change(object):
 class TestRun(object):
 
     def __init__(self,
-                 name, logs, status, runtime):
+                 name, patchset, timestamp, pipeline, logs, status, runtime):
         self.name = name
+        self.patchset = patchset
+        self.timestamp = timestamp
+        self.pipeline = pipeline
         self.logs = logs
         self.status = status
         self.runtime = runtime
@@ -59,72 +62,115 @@ def main():
         '--comments status:open project:openstack-dev/devstack limit:100')
 
     for change in results:
-        latest = None
+        latest = []
+        latest_check = None
+        latest_experimental = None
 
         try:
             logging.info("Considering %s" % change['number'])
-            # find the latest comment by jenkins
+            # find the latest comment by jenkins in check &
+            # experimental pipeline
             for comment in change['comments']:
                 if comment['reviewer']['username'] == 'jenkins':
-                    latest = comment
+                    if "(check pipeline)" in comment['message']:
+                        latest_check = comment
+                    if "(experimental pipeline)" in comment['message']:
+                        latest_experimental = comment
         except Exception:  # can happen for last summary comment
             pass
+
+        if latest_check:
+            latest.append(latest_check)
+        if latest_experimental:
+            latest.append(latest_experimental)
 
         if not latest:
             logging.info("No jenkins comments, skipping")
             continue
 
-        timestamp = datetime.fromtimestamp(latest['timestamp'])
-
         change = Change('devstack', change['branch'],
-                        change['number'], timestamp, change['subject'])
+                        change['number'], change['subject'])
 
-        results = latest['message'].split('\n')
-        for result in results:
-            if result.startswith("-"):
-                # strip the non-voting so everything else is the the
-                # time
-                result = result.replace('(non-voting)', '')
-                jobs = result[2:].split(' ')
-                # figure out runtime
-                j = TestRun(jobs[0], jobs[1], jobs[3], " ".join(jobs[5:]))
-                change.tests.append(j)
+        for comment in latest:
+
+            timestamp = datetime.fromtimestamp(comment['timestamp'])
+
+            # extract the patchset & pipeline this applies to
+            patchset = re.search("Patch Set (?P<patchset>\d+):",
+                                 comment['message'])
+            patchset = patchset.group('patchset')
+            pipeline = re.search("\((?P<pipeline>\w+) pipeline\)",
+                                 comment['message'])
+            pipeline = pipeline.group('pipeline')
+
+            results = comment['message'].split('\n')
+            for result in results:
+                if result.startswith("-"):
+                    # strip the non-voting so everything else is the the
+                    # time
+                    result = result.replace('(non-voting)', '')
+                    jobs = result[2:].split(' ')
+                    # figure out runtime
+                    j = TestRun(jobs[0], patchset,
+                                timestamp,
+                                pipeline,
+                                jobs[1], jobs[3], " ".join(jobs[5:]))
+                    change.tests.append(j)
 
         all_changes.append(change)
 
-        fedora_25_changes = []
-        for change in all_changes:
-            for run in change.tests:
-                if run.name == "gate-tempest-dsvm-neturon-full-fedora-25-nv":
-                    fedora_25_changes.append(dict(timestamp=change.timestamp,
+    fedora_26_changes = []
+    for change in all_changes:
+        for run in change.tests:
+            if run.name == "gate-tempest-dsvm-neutron-full-fedora-26-nv":
+                fedora_26_changes.append(dict(timestamp=run.timestamp,
+                                              number=change.number,
+                                              patchset=run.patchset,
+                                              pipeline=run.pipeline,
+                                              subject=change.subject,
+                                              branch=change.branch,
+                                              run=run))
+    fedora_26_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    fedora_26_py3_changes = []
+    for change in all_changes:
+        for run in change.tests:
+            if run.name == "gate-devstack-dsvm-py36-updown-fedora-26-nv":
+                fedora_26_py3_changes.append(dict(timestamp=run.timestamp,
                                                   number=change.number,
+                                                  patchset=run.patchset,
+                                                  pipeline=run.pipeline,
                                                   subject=change.subject,
                                                   branch=change.branch,
                                                   run=run))
-        fedora_25_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+    fedora_26_py3_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
-        centos_changes = []
-        for change in all_changes:
-            for run in change.tests:
-                if run.name == "gate-tempest-dsvm-neutron-full-centos-7-nv":
-                    centos_changes.append(dict(timestamp=change.timestamp,
-                                               number=change.number,
-                                               subject=change.subject,
-                                               branch=change.branch,
-                                               run=run))
+    
+    centos_changes = []
+    for change in all_changes:
+        for run in change.tests:
+            if run.name == "gate-tempest-dsvm-neutron-full-centos-7-nv":
+                centos_changes.append(dict(timestamp=run.timestamp,
+                                           number=change.number,
+                                           patchset=run.patchset,
+                                           pipeline=run.pipeline,
+                                           subject=change.subject,
+                                           branch=change.branch,
+                                           run=run))
         centos_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
-        env = Environment(
-            loader=PackageLoader('gerrit_job_results', 'templates'))
-        template = env.get_template('page.html')
+    env = Environment(
+        loader=PackageLoader('gerrit_job_results', 'templates'))
+    template = env.get_template('page.html')
 
-        output = template.render(all_changes=all_changes,
-                                 fedora_25_changes=fedora_25_changes,
-                                 centos_changes=centos_changes,
-                                 updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
+    output = template.render(all_changes=all_changes,
+                             fedora_26_changes=fedora_26_changes,
+                             fedora_26_py3_changes=fedora_26_py3_changes,
+                             centos_changes=centos_changes,
+                             updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
 
-        with codecs.open('output.html', 'w', 'utf-8') as f:
-            f.write(output)
+    with codecs.open('output.html', 'w', 'utf-8') as f:
+        f.write(output)
 
 if __name__ == "__main__":
     main()

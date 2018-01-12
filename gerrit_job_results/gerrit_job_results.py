@@ -68,10 +68,10 @@ def main():
 
         try:
             logging.info("Considering %s" % change['number'])
-            # find the latest comment by jenkins in check &
+            # find the latest comment by zuul in check &
             # experimental pipeline
             for comment in change['comments']:
-                if comment['reviewer']['username'] == 'jenkins':
+                if comment['reviewer']['username'] == 'zuul':
                     if "(check pipeline)" in comment['message']:
                         latest_check = comment
                     if "(experimental pipeline)" in comment['message']:
@@ -85,7 +85,7 @@ def main():
             latest.append(latest_experimental)
 
         if not latest:
-            logging.info("No jenkins comments, skipping")
+            logging.info("No zuul comments, skipping")
             continue
 
         change = Change('devstack', change['branch'],
@@ -122,7 +122,7 @@ def main():
     fedora_26_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "gate-tempest-dsvm-neutron-full-fedora-26-nv":
+            if run.name == "legacy-tempest-dsvm-neutron-full-fedora-26":
                 fedora_26_changes.append(dict(timestamp=run.timestamp,
                                               number=change.number,
                                               patchset=run.patchset,
@@ -135,7 +135,7 @@ def main():
     fedora_26_py3_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "gate-devstack-dsvm-py36-updown-fedora-26-nv":
+            if run.name == "legacy-devstack-dsvm-py36-updown-fedora-26":
                 fedora_26_py3_changes.append(dict(timestamp=run.timestamp,
                                                   number=change.number,
                                                   patchset=run.patchset,
@@ -145,11 +145,10 @@ def main():
                                                   run=run))
     fedora_26_py3_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    
     centos_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "gate-tempest-dsvm-neutron-full-centos-7-nv":
+            if run.name == "legacy-tempest-dsvm-neutron-full-centos-7":
                 centos_changes.append(dict(timestamp=run.timestamp,
                                            number=change.number,
                                            patchset=run.patchset,

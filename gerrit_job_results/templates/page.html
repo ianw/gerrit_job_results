@@ -27,7 +27,7 @@
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active"><a href="#centos_devstack" aria-controls="profile" role="tab" data-toggle="tab">Centos Devstack</a></li>
-        <li role="presentation"><a href="#f27_devstack" aria-controls="home" role="tab" data-toggle="tab">F27 devstack</a></li>
+        <li role="presentation"><a href="#f_latest_devstack" aria-controls="home" role="tab" data-toggle="tab">Fedora Latest devstack</a></li>
       </ul>
 
       <!-- Tab panes -->
@@ -72,7 +72,7 @@
           </table>
         </div><!--centos-tab-->
 
-        <div role="tabpanel" class="tab-pane" id="f27_devstack">
+        <div role="tabpanel" class="tab-pane" id="f_latest_devstack">
           <table class="table">
             <thead>
               <tr>
@@ -86,7 +86,7 @@
               </tr>
             </thead>
             <tbody>
-              {% for change in fedora_27_changes %}
+              {% for change in fedora_latest_changes %}
               <tr>
                 <td>{{ change["timestamp"] }}</td>
                 <td><a href="https://review.openstack.org/#/c/{{ change["number"] }}/{{ change["patchset"] }}">{{ change["number"] }}/{{ change["patchset"] }}</a></td>

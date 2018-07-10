@@ -119,18 +119,18 @@ def main():
 
         all_changes.append(change)
 
-    fedora_27_changes = []
+    fedora_latest_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "devstack-platform-fedora-27":
-                fedora_27_changes.append(dict(timestamp=run.timestamp,
+            if run.name == "devstack-platform-fedora-latest":
+                fedora_latest_changes.append(dict(timestamp=run.timestamp,
                                               number=change.number,
                                               patchset=run.patchset,
                                               pipeline=run.pipeline,
                                               subject=change.subject,
                                               branch=change.branch,
                                               run=run))
-    fedora_27_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+    fedora_latest_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
     centos_changes = []
     for change in all_changes:
@@ -150,7 +150,7 @@ def main():
     template = env.get_template('page.html')
 
     output = template.render(all_changes=all_changes,
-                             fedora_27_changes=fedora_27_changes,
+                             fedora_latest_changes=fedora_latest_changes,
                              centos_changes=centos_changes,
                              updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
 

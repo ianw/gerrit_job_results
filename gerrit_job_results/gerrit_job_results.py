@@ -12,7 +12,7 @@ from jinja2 import PackageLoader
 
 logger = logging.getLogger(__name__)
 
-GERRIT_HOST = 'review.openstack.org'
+GERRIT_HOST = 'review.opendev.org'
 USER = 'iwienand'
 KEY = os.path.expanduser('~/.ssh/id_rsa')
 
@@ -59,7 +59,7 @@ def main():
 
     g = gerritlib.gerrit.Gerrit(GERRIT_HOST, USER, keyfile=KEY)
     results = g.bulk_query(
-        '--comments status:open project:openstack-dev/devstack limit:100')
+        '--comments status:open project:openstack/devstack limit:100')
 
     for change in results:
         latest = []

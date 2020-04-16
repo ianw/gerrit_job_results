@@ -135,7 +135,7 @@ def main():
     centos_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "devstack-platform-centos-7":
+            if run.name == "devstack-platform-centos-8":
                 centos_changes.append(dict(timestamp=run.timestamp,
                                            number=change.number,
                                            patchset=run.patchset,

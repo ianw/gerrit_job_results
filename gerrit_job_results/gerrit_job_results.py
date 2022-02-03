@@ -132,18 +132,31 @@ def main():
                                               run=run))
     fedora_latest_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    centos_changes = []
+    centos8_changes = []
     for change in all_changes:
         for run in change.tests:
-            if run.name == "devstack-platform-centos-8":
-                centos_changes.append(dict(timestamp=run.timestamp,
+            if run.name == "devstack-platform-centos-8-stream":
+                centos8_changes.append(dict(timestamp=run.timestamp,
                                            number=change.number,
                                            patchset=run.patchset,
                                            pipeline=run.pipeline,
                                            subject=change.subject,
                                            branch=change.branch,
                                            run=run))
-        centos_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+        centos8_changes.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    centos9_changes = []
+    for change in all_changes:
+        for run in change.tests:
+            if run.name == "devstack-platform-centos-9-stream":
+                centos9_changes.append(dict(timestamp=run.timestamp,
+                                           number=change.number,
+                                           patchset=run.patchset,
+                                           pipeline=run.pipeline,
+                                           subject=change.subject,
+                                           branch=change.branch,
+                                           run=run))
+        centos9_changes.sort(key=lambda x: x['timestamp'], reverse=True)
 
     env = Environment(
         loader=PackageLoader('gerrit_job_results', 'templates'))
@@ -151,7 +164,8 @@ def main():
 
     output = template.render(all_changes=all_changes,
                              fedora_latest_changes=fedora_latest_changes,
-                             centos_changes=centos_changes,
+                             centos8_changes=centos8_changes,
+                             centos9_changes=centos9_changes,
                              updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
 
     with codecs.open('output.html', 'w', 'utf-8') as f:

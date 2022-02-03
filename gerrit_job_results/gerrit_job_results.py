@@ -5,7 +5,7 @@ import re
 
 import gerritlib.gerrit
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from jinja2 import Environment
 from jinja2 import PackageLoader
@@ -166,7 +166,7 @@ def main():
                              fedora_latest_changes=fedora_latest_changes,
                              centos8_changes=centos8_changes,
                              centos9_changes=centos9_changes,
-                             updated=datetime.now().strftime("%Y-%m-%d %H:%M"))
+                             updated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
     with codecs.open('output.html', 'w', 'utf-8') as f:
         f.write(output)

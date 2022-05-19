@@ -3,7 +3,7 @@ import logging
 import os.path
 import re
 
-import gerritlib.gerrit
+import pygerrit2
 
 from datetime import datetime, timezone
 
@@ -57,26 +57,28 @@ def main():
 
     all_changes = []
 
-    g = gerritlib.gerrit.Gerrit(GERRIT_HOST, USER, keyfile=KEY)
-    results = g.bulk_query(
-        '--comments status:open project:openstack/devstack limit:100')
+    g = pygerrit2.GerritRestAPI("https://"+GERRIT_HOST)
 
-    for change in results:
+    changes = g.get("/changes/?q=project:openstack/devstack+status:open")
+
+    for change in changes:
         latest = []
         latest_check = None
         latest_experimental = None
 
         try:
-            logging.info("Considering %s" % change['number'])
+            logging.info("Considering %s" % change['id'])
             # find the latest comment by zuul in check &
             # experimental pipeline
-            for comment in change['comments']:
-                if comment['reviewer']['username'] == 'zuul':
-                    if "(check pipeline)" in comment['message']:
-                        latest_check = comment
-                    if "(experimental pipeline)" in comment['message']:
-                        latest_experimental = comment
-        except Exception:  # can happen for last summary comment
+            messages = g.get("/changes/%s/messages" % change['id'])
+            for message in messages:
+                if message['author']['name'] == 'Zuul':
+                    if "(check pipeline)" in message['message']:
+                        latest_check = message
+                    if "(experimental pipeline)" in message['message']:
+                        latest_experimental = message
+        except Exception:  # can happen for last summary message
+            logging.info("Unhandled failure")
             pass
 
         if latest_check:
@@ -85,15 +87,15 @@ def main():
             latest.append(latest_experimental)
 
         if not latest:
-            logging.info("No zuul comments, skipping")
+            logging.info("No zuul messages, skipping")
             continue
 
         change = Change('devstack', change['branch'],
-                        change['number'], change['subject'])
+                        change['_number'], change['subject'])
 
         for comment in latest:
-
-            timestamp = datetime.fromtimestamp(comment['timestamp'])
+            timestamp = datetime.strptime(comment['date'][:-3],
+                                          '%Y-%m-%d %H:%M:%S.%f')
 
             # extract the patchset & pipeline this applies to
             patchset = re.search("Patch Set (?P<patchset>\d+):",
